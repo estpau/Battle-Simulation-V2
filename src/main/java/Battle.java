@@ -42,6 +42,8 @@ public class Battle {
 
         //Se seleccionan los miembros del equipo contrario random:
         System.out.println(createRandomParty(teamSize));
+        
+
     }
 
 
@@ -262,6 +264,99 @@ public class Battle {
         for (int i = 0; i < team2Deads.size(); i++) {
             System.out.println(graveyard.get(i).toString());
         }
+
+    }
+
+    //method for the user to create the players of the team 1
+    public static List<Character> userMakeaParty(int team_size){
+        List<Character> choosenCharacters = new ArrayList<>();
+        List<String> teamNames = new ArrayList<>();
+        for (int i = 0; i< team_size; i++){
+            int id = i+1;
+            //selection of character type
+            Scanner typeOfCharacter = new Scanner(System.in);
+            System.out.println("What would you like to create a Warrior or Wizard?");
+            String Character_choose = typeOfCharacter.next();
+            //warrior choose
+            if (Character_choose.equalsIgnoreCase("warrior")){
+                Scanner names = new Scanner(System.in);
+                //name selection
+                System.out.println("Now choose a name for your character");
+                String name =names.next();
+                //if repeated name: JR add at the end
+                if (choosenCharacters.size() != 0) {
+                    for (String s : teamNames) {
+                        if (s.equalsIgnoreCase(name)) {
+                            name = name + " Jr";
+                            System.out.println("Repeated name! Final name: " + name);
+                        }
+                    }
+                }
+                teamNames.add(name);
+                //hp selection [100,200]
+                int hp = userInputs("Health", 200,100);
+                //stamina selection [10,50]
+                int stamina =  userInputs("Stamina", 50,10);
+                //strength selection [1,10]
+                int strength = userInputs("Strength", 10,1);
+                Warrior player = new Warrior(id, name, hp, stamina, strength);
+                choosenCharacters.add(player);
+                if (i != team_size-1 ) {
+                    System.out.println("Great! Let's create another character");
+                }
+            //wizard choose
+            }else if(Character_choose.equalsIgnoreCase("wizard")){
+                //name selection
+                Scanner names = new Scanner(System.in);
+                System.out.println("Now choose a name for your character");
+                String name =names.next();
+                //if repeated name: JR add at the end
+                if (choosenCharacters.size() != 0) {
+                    for (String s : teamNames) {
+                        if (s.equalsIgnoreCase(name)) {
+                            name = name + " JR";
+                            System.out.println("Repeated name! Final name: " + name);
+                        }
+                    }
+                }
+                teamNames.add(name);
+                //hp selection [50,100]
+                int hp = userInputs("Health", 100, 50);
+                //mana selection [10,50]
+                int mana = userInputs("Mana", 50, 10);
+                //intelligence selection[1,50]
+                int intelligence = userInputs("Intelligence", 50, 1);
+                Wizard player = new Wizard(id, name, hp,mana, intelligence);
+                choosenCharacters.add(player);
+                if (i != team_size-1 ) {
+                    System.out.println("Great! Let's create another character");
+                }
+            //invalid input
+            }else{
+                System.err.println("Please select a valid type. Write Warrior or Wizard");
+                i--;
+            }
+        }
+        //Show the team 1 I don´t know if it was needed, but I added it just in case
+        System.out.println("Process Complete! Team 1 has the following members:");
+        for (int i = 0; i < choosenCharacters.size(); i++) {
+            System.out.println(choosenCharacters.get(i).toString());
+        }
+        return choosenCharacters;
+
+    }
+
+    public static int userInputs (String characteristic, int max, int min){
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Now choose the " + characteristic + ". It has to be between "+ min+ " and " + max);
+        String input =scanner.next();
+        int inputInt = Integer.parseInt(input);
+        while(inputInt > max || inputInt < min) {
+            System.err.println("Invalid value. Please try again");
+            input = scanner.next();
+            inputInt = Integer.parseInt(input);
+        }
+        return inputInt;
     }
 
 }
