@@ -6,9 +6,10 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="homework" />
         <module name="homework_goodone" />
+        <module name="homework" />
         <module name="RPG-BATTLE-SIMULATION" />
+        <module name="Battle-Simulation-V2" />
       </profile>
     </annotationProcessing>
   </component>

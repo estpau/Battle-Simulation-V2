@@ -1,6 +1,8 @@
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.ArrayList;
@@ -116,21 +118,22 @@ public class Battle {
 
 
     //method that creates parties from a csv
-    public static List<Character> createPartyFromCSV(int team_size) throws FileNotFoundException {
+    public static List<Character> createPartyFromCSV(int size) throws FileNotFoundException {
         List<Character> csvCharacters = new ArrayList<>();
         Scanner scanner = new Scanner(new File("characters.csv"));
         String header = scanner.nextLine();
         while(scanner.hasNextLine()){
             String[] attributes = scanner.nextLine().split(";");
             int id = Integer.parseInt(attributes[0]);
-            String name = attributes[1];
-            int hp = Integer.parseInt(attributes[2]);
-            int mana = Integer.parseInt(attributes[3]);
-            int stamina = Integer.parseInt(attributes[3]);
-            int strength = Integer.parseInt(attributes[4]);
-            int intelligence = Integer.parseInt(attributes[4]);
-            int random = (int) Math.floor(Math.random()*2+1);
-            if(random == 1){
+            String characterClass = attributes[1];
+            String name = attributes[2];
+            int hp = Integer.parseInt(attributes[3]);
+            int mana = Integer.parseInt(attributes[4]);
+            int stamina = Integer.parseInt(attributes[5]);
+            int strength = Integer.parseInt(attributes[6]);
+            int intelligence = Integer.parseInt(attributes[7]);
+            //int random = (int) Math.floor(Math.random()*2+1);
+            if(characterClass.equals("Warrior")){
                 csvCharacters.add(new Warrior(id,name,hp,stamina,strength));
             } else {
                 csvCharacters.add(new Wizard(id,name,hp,mana,intelligence));
@@ -139,7 +142,7 @@ public class Battle {
         scanner.close();
         List<Character> team = new ArrayList<>();
         Collections.shuffle(csvCharacters);
-        for(int i = 0; i<team_size; i++){
+        for(int i = 0; i<size; i++){
             team.add(csvCharacters.get(i));
         }
         return team;
@@ -358,5 +361,42 @@ public class Battle {
         }
         return inputInt;
     }
+
+    //method to export/save the party into a csv file
+    public static void exportPartyToCSV(List<Character> partyList) throws IOException {
+        // create CSVWriter object with filewriter object as parameter
+        CSVWriter writer = new CSVWriter(new FileWriter("export-party.csv"),';' ,CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END);
+        // adding header to csv
+        String[] header = { "Id", "Character Class", "Name","HP","Mana", "Stamina","Strength", "Intelligence"};
+        writer.writeNext(header);
+
+        // add data to csv
+        for (int i=0;i<partyList.size();i++) {
+            String[] data = new String[8];
+            data[0] = String.valueOf(partyList.get(i).getId());
+            data[1] = partyList.get(i).getClass().getSimpleName().toString();
+            data[2] = partyList.get(i).getName();
+            data[3] = String.valueOf(partyList.get(i).getHp());
+            // need to convert Character into corresponding character subclass in order to access the subclass properties
+            if(partyList.get(i) instanceof Wizard){
+                Wizard w = (Wizard) partyList.get(i);
+                data[4] = String.valueOf(w.getMana());
+                data[5] = "0";
+                data[6] = "0";
+                data[7] = String.valueOf(w.getIntelligence());
+            } else if(partyList.get(i) instanceof Warrior){
+                Warrior w = (Warrior) partyList.get(i);
+                data[4] = "0";
+                data[5] = String.valueOf(w.getStamina());
+                data[6] = String.valueOf(w.getStrength());
+                data[7] = "0";
+            }
+            writer.writeNext(data);
+        }
+        // closing writer
+        writer.close();
+    }
+
+
 
 }
