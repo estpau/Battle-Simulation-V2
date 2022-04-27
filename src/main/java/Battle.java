@@ -29,50 +29,68 @@ public class Battle {
     }
 
     public static void main(String[] args) throws FileNotFoundException {
+        boolean play = true;
+        while (play) {
+            Scanner scanner = new Scanner(System.in);
 
-        Scanner scanner = new Scanner(System.in);
+            System.out.println("Welcome to the Tournament of Terror. Before starting the battle you have to define the team size.");
+            System.out.println("Teams cannot be longer than 10. Please insert the size: ");
 
-        System.out.println("Welcome to the Tournament of Terror. Before starting the battle you have to define the team size.");
-        System.out.println("Teams cannot be longer than 10. Please insert the size: ");
+            setTeamSize(defineTeamSize(scanner));
 
-        setTeamSize(defineTeamSize(scanner));
+            System.out.println("Your team has " + teamSize + " players.");
+            team2 = createPartyFromCSV(teamSize);
 
-        System.out.println("Your team has " + teamSize + " players.");
-        team2 = createPartyFromCSV(teamSize);
+            System.out.println("Now you have to select your team members");
+            System.out.println("Select the players. Type \"r\" to randomize or \"c\" to customize your players");
+            scanner.nextLine();
 
-        System.out.println("Now you have to select your team members");
-        System.out.println("Select the players. Type \"r\" to randomize or \"c\" to customize your players");
-        scanner.nextLine();
+            if (isRandom(scanner)) {
+                team1 = createRandomParty(teamSize);
+            } else {
+                team1 = userMakeaParty(teamSize);
+            }
 
-        if(isRandom(scanner)){
-            team1 = createRandomParty(teamSize);
-        } else {
-            team1 = userMakeaParty(teamSize);
+            System.out.println("Your team has the following players: ");
+            printPlayers(team1);
+            System.out.println();
+
+            System.out.println("Your team has been saved for future battles in a CSV file");
+            System.out.println();
+
+            try {
+                exportPartyToCSV(team1);
+            } catch (Exception ex) {
+                System.out.println("Up!!!");
+            }
+
+            System.out.println("Your team is going to battle against: ");
+            printPlayers(team2);
+            System.out.println();
+
+            System.out.println("The fight will start soon !!!");
+            System.out.println("Now, type \"r\" for a random battle or \"c\" " +
+                    "to choose the players that will face each other");
+
+            startBattle(scanner, isRandom(scanner));
+
+            System.out.println("Would you like to run another battle?[yes/no]");
+            String answer = scanner.next();
+            boolean answer_notvalid = true;
+            while (answer_notvalid) {
+                if (answer.equalsIgnoreCase("yes")) {
+                    System.out.println("Leeeet´s go");
+                    answer_notvalid = false;
+                } else if (answer.equalsIgnoreCase("no")) {
+                    System.out.println("No worry! We will miss you :( But thanks for playing <3");
+                    play = false;
+                    answer_notvalid = false;
+                } else {
+                    System.err.println("WRONG! Write only YES or NO");
+                    answer = scanner.next();
+                }
+            }
         }
-
-        System.out.println("Your team has the following players: ");
-        printPlayers(team1);
-        System.out.println();
-
-        System.out.println("Your team has been saved for future battles in a CSV file");
-        System.out.println();
-
-        try {
-            exportPartyToCSV(team1);
-        } catch (Exception ex){
-            System.out.println("Up!!!");
-        }
-
-        System.out.println("Your team is going to battle against: ");
-        printPlayers(team2);
-        System.out.println();
-
-        System.out.println("The fight will start soon !!!");
-        System.out.println("Now, type \"r\" for a random battle or \"c\" " +
-                "to choose the players that will face each other");
-
-        startBattle(scanner, isRandom(scanner));
-
     }
 
     //============ Methods ===================
