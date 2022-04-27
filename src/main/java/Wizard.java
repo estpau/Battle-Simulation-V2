@@ -38,8 +38,10 @@ public class Wizard extends Character{
             p.setHp(p.getHp() - 2);
             mana++;
         }
+
         if(p.getHp() <= 0){
             p.setAlive(false);
+            p.setHp(0);
         }
 
     }

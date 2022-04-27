@@ -1,4 +1,6 @@
 
+import com.opencsv.CSVWriter;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -36,18 +38,42 @@ public class Battle {
         setTeamSize(defineTeamSize(scanner));
 
         System.out.println("Your team has " + teamSize + " players.");
+        team2 = createPartyFromCSV(teamSize);
+
         System.out.println("Now you have to select your team members");
+        System.out.println("Select the players. Type \"r\" to randomize or \"c\" to customize your players");
+        scanner.nextLine();
 
-        //Una vez definida la cantidad de integrantes de los equipos
+        if(isRandom(scanner)){
+            team1 = createRandomParty(teamSize);
+        } else {
+            team1 = userMakeaParty(teamSize);
+        }
 
-        //Se llama a la funcion que esta haciendo Pilar.
+        System.out.println("Your team has the following players: ");
+        printPlayers(team1);
+        System.out.println();
 
-        //Se seleccionan los miembros del equipo contrario random:
-        System.out.println(createRandomParty(teamSize));
-        
+        System.out.println("Your team has been saved for future battles in a CSV file");
+        System.out.println();
+
+        try {
+            exportPartyToCSV(team1);
+        } catch (Exception ex){
+            System.out.println("Up!!!");
+        }
+
+        System.out.println("Your team is going to battle against: ");
+        printPlayers(team2);
+        System.out.println();
+
+        System.out.println("The fight will start soon !!!");
+        System.out.println("Now, type \"r\" for a random battle or \"c\" " +
+                "to choose the players that will face each other");
+
+        startBattle(scanner, isRandom(scanner));
 
     }
-
 
     //============ Methods ===================
 
@@ -61,7 +87,7 @@ public class Battle {
                 if (random){
                     randomBattle(team1, team2);
                 } else {
-                    battle(team1, team2);
+                    battle(scanner, team1, team2);
                 }
                 battlehasstart = true;
             } else {
@@ -71,51 +97,89 @@ public class Battle {
     }
 
     //Method that permit select one by one player from each team
-    public static void battle(List<Character> team1, List<Character> team2){
-        //..........
+    public static void battle(Scanner scanner, List<Character> team1, List<Character> team2){
+        while (team1.size() > 0 && team2.size() > 0){
+            System.out.println("Select the number of the player from Team 1");
+            printPlayers(team1);
+            Character c1 = selectPlayer(scanner, team1);
+
+            System.out.println("Select the number of the player from Team 2");
+            printPlayers(team2);
+            Character c2 = selectPlayer(scanner, team2);
+
+            characterVSCharacter(c1,c2);
+        }
+        if (team1.size() > 0){
+            printWinner("Team 1");
+        }else{
+            printWinner("Team 2");
+        }
     }
 
+    public static Character selectPlayer(Scanner scanner, List<Character> team){
+        int number;
+        Character c;
+
+        try {
+            number = scanner.nextInt();
+            if (number < 1 || number > team.size()){
+                System.err.println("The number is not correct. Write a number between 1 and " + team.size());
+                c = selectPlayer(scanner, team);
+            } else {
+                c = team.get(number - 1);
+                System.out.println("You have selected " + c.getName());
+            }
+        } catch (Exception e){
+            System.err.println("You have to write a number between 1 and " + team.size());
+            scanner.next();
+            c = selectPlayer(scanner, team);
+        }
+
+        return c;
+    }
 
     //method that creates random players
     public static List<Character> createRandomParty(int team_size) throws FileNotFoundException {
         List<Character> randomCharacters = new ArrayList<>();
         String[] names = {"Paula", "Monica", "Yanira", "Esteban", "James", "Lucas", "Sebastian",
-                "Carlos", "Julia", "Pilar"};
-        int randomIndex;
-        String temp;
-        Random r = new Random();
-        // hacer el ordenamiento aleatorio del array de nombres5
-        for(int i = 0; i < names.length; i++) {
-            // generar numero aleatorio entre 0 y array.length
-            randomIndex = r.nextInt(names.length);
-            // hacer el intercambio entre el nombre en posicion i y randomIndex
-            temp = names[randomIndex];
-            names[randomIndex] = names[i];
-            names[i] = temp;
-
-            int id = 0+i;
-            String name = names[i];
-            Random ran=new Random();
-            int mana=ran.nextInt(50)+10;
-            int stamina = ran.nextInt(50)+10;
-            int strength = ran.nextInt(10)+1;
-            int intelligence = ran.nextInt(50)+1;
-            int hp = ran.nextInt(200)+50;
-            if (hp< 100) {
-                randomCharacters.add(new Wizard(id, name, hp, mana, intelligence));
-            } else if (hp > 100) {
-                randomCharacters.add(new Warrior(id, name, hp, stamina, strength));
+                "Carlos", "Julia", "Pilar", "Felipe", "Raymond", "Shaun"};
+        for (int i = 0; i < team_size; i++){
+            int id = i;
+            //random selection of the name
+            String name = names[(int)(Math.random() * names.length)];
+            //if is equal of one of the already selected add Jr at the end
+            if (randomCharacters.size() != 0) {
+                for (int j = 0; j < randomCharacters.size(); j++) {
+                    if (name.equals(randomCharacters.get(j).getName())) {
+                        name = name + " Jr";
+                    }
+                }
             }
-            Collections.shuffle(randomCharacters);
+            int hp = 0;
+            //random selection of the character. If 1 Warrior, if 2 Wizard
+            int random_Character = (int)(Math.random()* (3 -1) +1);
+            if (random_Character == 1) {
+                //randomly creation of hp
+                hp = (int)(Math.random()* (201 -100) +100);
+                //randomly creation of strength
+                int strength = (int)(Math.random()* (11 -1) +1);
+                //randomly creation of stamina
+                int stamina = (int)(Math.random()* (51 -10) +10);
+                Warrior player_warrior = new Warrior (id, name, hp, stamina, strength);
+                randomCharacters.add(player_warrior);
+            }else {
+                //randomly creation of hp
+                hp = (int)(Math.random()* (101 -50) +50);
+                //randomly creation of mana
+                int mana = (int)(Math.random()* (51 -10) +10);
+                //randomly creation of intelligence
+                int intelligence = (int)(Math.random()* (51 -1) +1);
+                Wizard player_wizard = new Wizard (id,name, hp, mana, intelligence);
+                randomCharacters.add(player_wizard);
+            }
         }
-        List<Character> team1 = new ArrayList<>();
-
-        for (int j = 0; j < team_size; j++) {
-            team1.add(randomCharacters.get(j));
-        }
-        return team1;
+        return randomCharacters;
     }
-
 
     //method that creates parties from a csv
     public static List<Character> createPartyFromCSV(int size) throws FileNotFoundException {
@@ -152,28 +216,30 @@ public class Battle {
     public static void randomBattle(List<Character> team1, List<Character> team2) {
         while (team1.size() > 0 && team2.size() > 0) {
             //way of getting random numbers (min included and max excluded)
-            Character c1 = team1.get((int) Math.random() * (team1.size() - 0) + 0);
+            Character c1 = team1.get((int) (Math.random() * team1.size()));
             System.out.println("From team 1 we have: " + c1.getName());
-            Character c2 = team2.get((int) Math.random() * (team1.size() - 0) + 0);
+            Character c2 = team2.get((int) (Math.random() * team2.size()));
             System.out.println("From team 2 we have: " + c2.getName());
-            CharacterVSCharacter(c1,c2);
+            characterVSCharacter(c1,c2);
         }
         if (team1.size() > 0){
-            System.out.println("Team 1 is the winner"); //Your team !!!
-            System.out.println("But lets pray a moment for our losses: ");
-            //maybe here we could show the graveyard but i am done for the day
-            showGraveyard();
+            printWinner("Team 1");
         }else{
-            System.out.println("Team 2 is the winner");
-            System.out.println("But lets pray a moment for our losses: ");
-            //maybe here we could show the graveyard but i am done for the day
-            showGraveyard();
+            printWinner("Team 2");
         }
+    }
+
+    public static void printWinner(String team){
+
+        System.out.println(team + " is the winner");
+        System.out.println();
+        System.out.println("But lets pray a moment for our losses: ");
+        showGraveyard();
     }
 
     //method that makes the battle between 2 players
     //I have assumed always the first parameter will be the character from team 1 and the second the one from team 2
-    public static void CharacterVSCharacter(Character c1, Character c2){
+    public static void characterVSCharacter(Character c1, Character c2){
         //number of rounds
         int round = 0;
         //if the players are still alive we keep the battle
@@ -187,15 +253,16 @@ public class Battle {
             System.out.println();
         }
         if (c1.isAlive()){
-            System.out.println(c2.getName() + " is the winner");
+            System.out.println(c1.getName() + " is the winner");
             sendToGraveyard(c2,team2);
             teamOfDead.add(2);
         } else if (c2.isAlive()){
-            System.out.println(c1.getName() + " is the winner");
+            System.out.println(c2.getName() + " is the winner");
             sendToGraveyard(c1,team1);
             teamOfDead.add(1);
         } else {
             System.out.println("Both have died :(");
+            System.out.println();
             sendToGraveyard(c1,team1);
             teamOfDead.add(1);
             sendToGraveyard(c2,team2);
@@ -259,16 +326,36 @@ public class Battle {
                 team2Deads.add(graveyard.get(i));
             }
         }
+        System.out.println();
         System.out.println("From team 1: ");
         for (int i = 0; i < team1Deads.size(); i++) {
-            System.out.println(graveyard.get(i).toString());
+            System.out.println(team1Deads.get(i).toString());
         }
+        System.out.println();
         System.out.println("From team 2: ");
         for (int i = 0; i < team2Deads.size(); i++) {
-            System.out.println(graveyard.get(i).toString());
+            System.out.println(team2Deads.get(i).toString());
         }
+        System.out.println();
 
     }
+
+    public static String chooseName(String name, List<String> teamNames) {
+        if (teamNames.size() != 0) {
+            boolean repeatedName = false;
+            for (String s : teamNames) {
+                if (s.equalsIgnoreCase(name)) {
+                    name = name + " Jr";
+                    repeatedName = true;
+                }
+            }
+            if (repeatedName) {
+                System.out.println("Repeated name! Final name: " + name);
+            }
+        }
+        return name;
+    }
+
 
     //method for the user to create the players of the team 1
     public static List<Character> userMakeaParty(int team_size){
@@ -284,17 +371,11 @@ public class Battle {
             if (Character_choose.equalsIgnoreCase("warrior")){
                 Scanner names = new Scanner(System.in);
                 //name selection
+
                 System.out.println("Now choose a name for your character");
-                String name =names.next();
+                String name = chooseName(names.next(), teamNames);
                 //if repeated name: JR add at the end
-                if (choosenCharacters.size() != 0) {
-                    for (String s : teamNames) {
-                        if (s.equalsIgnoreCase(name)) {
-                            name = name + " Jr";
-                            System.out.println("Repeated name! Final name: " + name);
-                        }
-                    }
-                }
+
                 teamNames.add(name);
                 //hp selection [100,200]
                 int hp = userInputs("Health", 200,100);
@@ -312,16 +393,7 @@ public class Battle {
                 //name selection
                 Scanner names = new Scanner(System.in);
                 System.out.println("Now choose a name for your character");
-                String name =names.next();
-                //if repeated name: JR add at the end
-                if (choosenCharacters.size() != 0) {
-                    for (String s : teamNames) {
-                        if (s.equalsIgnoreCase(name)) {
-                            name = name + " JR";
-                            System.out.println("Repeated name! Final name: " + name);
-                        }
-                    }
-                }
+                String name = chooseName(names.next(), teamNames);
                 teamNames.add(name);
                 //hp selection [50,100]
                 int hp = userInputs("Health", 100, 50);
@@ -340,11 +412,15 @@ public class Battle {
                 i--;
             }
         }
+
+        /*
         //Show the team 1 I don´t know if it was needed, but I added it just in case
         System.out.println("Process Complete! Team 1 has the following members:");
         for (int i = 0; i < choosenCharacters.size(); i++) {
             System.out.println(choosenCharacters.get(i).toString());
         }
+
+         */
         return choosenCharacters;
 
     }
@@ -365,7 +441,7 @@ public class Battle {
     //method to export/save the party into a csv file
     public static void exportPartyToCSV(List<Character> partyList) throws IOException {
         // create CSVWriter object with filewriter object as parameter
-        CSVWriter writer = new CSVWriter(new FileWriter("export-party.csv"),';' ,CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END);
+        CSVWriter writer = new CSVWriter(new FileWriter("export-party.csv"),',' ,CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END);
         // adding header to csv
         String[] header = { "Id", "Character Class", "Name","HP","Mana", "Stamina","Strength", "Intelligence"};
         writer.writeNext(header);
@@ -397,6 +473,31 @@ public class Battle {
         writer.close();
     }
 
+    public static void printPlayers(List<Character> team){
+        int i = 1;
+        for (Character c : team){
+            String kindOfCharacter = c instanceof Warrior ? "Warrior" : "Wizard";
+            System.out.println(i + ". " + c.getName() + " \"" + kindOfCharacter + "\"");
+            i++;
+        }
+    }
+
+    public static boolean isRandom(Scanner scanner){
+        boolean random = true;
+        String option = scanner.nextLine();
+        switch (option) {
+            case "r" -> System.out.println("You have selected the random option");
+            case "c" -> {
+                random = false;
+                System.out.println("You have to select the option to choose");
+            }
+            default -> {
+                System.err.println("The command entered is not correct. Remember you must write \"r\" or \"c\"");
+                random = isRandom(scanner);
+            }
+        }
+        return random;
+    }
 
 
 }
