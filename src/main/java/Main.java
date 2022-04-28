@@ -1,13 +1,13 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-
     public static void main(String[] args) {
         boolean play = true;
         while (play) {
             Scanner scanner = new Scanner(System.in);
             Battle b = new Battle();
-
             System.out.println("Welcome to the Tournament of Terror. Before starting the battle you have to define the team size.");
             System.out.println("Teams cannot be longer than 10. Please insert the size: ");
 
@@ -23,12 +23,7 @@ public class Main {
             System.out.println("Now you have to select your team members");
             System.out.println("Select the players. Type \"r\" to randomize or \"c\" to customize your players");
             scanner.nextLine();
-            if (b.isRandom(scanner)) {
-                b.setTeam1(b.createRandomParty(b.getTeamSize()));
-            } else {
-                b.setTeam1(b.userMakeaParty(b.getTeamSize()));
-            }
-
+            b.createTeam1(scanner);
             System.out.println("Your team has the following players: ");
             b.printPlayers(b.getTeam1());
             System.out.println();

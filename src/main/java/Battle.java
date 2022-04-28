@@ -10,6 +10,16 @@ import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine.Info;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.SourceDataLine;
+import javax.sound.sampled.UnsupportedAudioFileException;
+
+import static javax.sound.sampled.AudioSystem.getAudioInputStream;
+import static javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED;
 
 
 public class Battle {
@@ -23,6 +33,15 @@ public class Battle {
     private static List<Integer> teamOfDead = new ArrayList<>();
     //size of each team that can be choose by the user
     private static int teamSize;
+
+    //background colour
+    public static final String ANSI_RED_BACKGROUND = "\u001B[41m";
+    public static final String ANSI_GREEN_BACKGROUND = "\u001B[42m";
+
+    //text colour
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_RESET = "\u001B[0m";
 
     //constructor
     public Battle() {
@@ -159,11 +178,38 @@ public class Battle {
         return team;
     }
 
-    //Option 3: user input the values for each character
-    public static List<Character> userMakeaParty(int team_size){
-        List<Character> choosenCharacters = new ArrayList<>();
+    //method for the creation of the team1
+    public static void createTeam1(Scanner scanner){
+        if (isRandom(scanner)) {
+            setTeam1(createRandomParty(getTeamSize()));
+        } else {
+            List<Character> caractherLeft = new ArrayList<>();
+            int playerToMakeLeft = getTeamSize();
+            for (int i = 0; i<getTeamSize(); i++) {
+                userMakeaParty(getTeam1());
+                playerToMakeLeft--;
+                if (i != getTeamSize() -1) {
+                    System.out.println("If you want to keep customizing press \"c\". If not, press \"r\" and the rest will be randomly created");
+                    if (isRandom(scanner)) {
+                        caractherLeft = createRandomParty(playerToMakeLeft);
+                        break;
+                    }
+                }
+            }
+            for (Character c : getTeam1()){
+                caractherLeft.add(c);
+            }
+            setTeam1(caractherLeft);
+        }
+    }
+
+    public static void userMakeaParty(List<Character> team){
         List<String> teamNames = new ArrayList<>();
-        for (int i = 0; i< team_size; i++){
+        if (team.size() != 0) {
+            for (Character s : team) {
+                teamNames.add(s.getName());
+            }
+        }
             //selection of character type
             Scanner typeOfCharacter = new Scanner(System.in);
             System.out.println("What would you like to create a Warrior or Wizard?");
@@ -182,10 +228,10 @@ public class Battle {
                 //strength selection [1,10]
                 int strength = userInputs("Strength", 10,1);
                 Warrior player = new Warrior(name, hp, stamina, strength);
-                choosenCharacters.add(player);
-                if (i != team_size-1 ) {
+                team.add(player);
+                //if (i != team_size-1 ) {
                     System.out.println("Great! Let's create another character");
-                }
+                //}
                 //wizard choose
             }else if(Character_choose.equalsIgnoreCase("wizard")){
                 //name selection
@@ -200,17 +246,15 @@ public class Battle {
                 //intelligence selection[1,50]
                 int intelligence = userInputs("Intelligence", 50, 1);
                 Wizard player = new Wizard(name, hp,mana, intelligence);
-                choosenCharacters.add(player);
-                if (i != team_size-1 ) {
+                team.add(player);
+                //if (i != team_size-1 ) {
                     System.out.println("Great! Let's create another character");
-                }
+                //}
                 //invalid input
             }else{
                 System.err.println("Please select a valid type. Write Warrior or Wizard");
-                i--;
+                //i--;
             }
-        }
-        return choosenCharacters;
     }
 
     //Auxiliary method for the creation of a character by the user. Input of the name, if repeated, add Jr at the end
@@ -232,17 +276,22 @@ public class Battle {
 
     //Auxiliary method for the creation of a character by the user. Input of the different characteristics between a range
     public static int userInputs (String characteristic, int max, int min){
+        int input = 0;
         Scanner scanner = new Scanner(System.in);
         System.out.println("Now choose the " + characteristic + ". It has to be between "+ min+ " and " + max);
-        String input =scanner.next();
-        int inputInt = Integer.parseInt(input);
-        //invalid input
-        while(inputInt > max || inputInt < min) {
+        try {
+            input = scanner.nextInt();
+            //invalid input
+            while (input > max || input < min) {
+                System.err.println("Invalid value. Please try again");
+                input = scanner.nextInt();
+            }
+        }catch(Exception e){
             System.err.println("Invalid value. Please try again");
-            input = scanner.next();
-            inputInt = Integer.parseInt(input);
+            scanner.next();
+            input = userInputs(characteristic,max,min);
         }
-        return inputInt;
+        return input;
     }
 
     //method for the selection of a random or customize. Use in team creation and battle.
@@ -267,9 +316,10 @@ public class Battle {
     public static void startBattle(Scanner scanner, boolean random){
         boolean battlehasstart = false;
         while(!battlehasstart) {
-            System.out.println("Please write start to begin the battle:");
+            System.out.println("Please write \"start\" to begin the battle:");
             String start = scanner.nextLine();
             if (start.equals("start")) {
+                play("piratas.wav");
                 if (random){
                     randomBattle(team1, team2);
                 } else {
@@ -306,7 +356,6 @@ public class Battle {
     public static Character selectPlayer(Scanner scanner, List<Character> team){
         int number;
         Character c;
-
         try {
             number = scanner.nextInt();
             if (number < 1 || number > team.size()){
@@ -361,15 +410,17 @@ public class Battle {
         }
         //depend on who character reminds alive at the end, if any, we do different things.
         if (c1.isAlive()){
-            System.out.println(c1.getName() + " is the winner");
+            System.out.println( ANSI_GREEN + c1.getName() + " is the winner" + ANSI_RESET);
+            System.out.println();
             sendToGraveyard(c2,team2);
             teamOfDead.add(2);
         } else if (c2.isAlive()){
-            System.out.println(c2.getName() + " is the winner");
+            System.out.println( ANSI_GREEN + c2.getName() + " is the winner"+ ANSI_RESET);
+            System.out.println();
             sendToGraveyard(c1,team1);
             teamOfDead.add(1);
         } else {
-            System.out.println("Both have died :(");
+            System.out.println(ANSI_RED + "Both have died :(" + ANSI_RESET);
             System.out.println();
             sendToGraveyard(c1,team1);
             teamOfDead.add(1);
@@ -379,10 +430,12 @@ public class Battle {
     }
     //method that prints the winner
     public static void printWinner(String team){
-
-        System.out.println(team + " is the winner");
+        System.out.println(ANSI_GREEN_BACKGROUND + team + " is the winner" + ANSI_RESET);
         System.out.println();
-        System.out.println("But lets pray a moment for our losses: ");
+        theend();
+        play("applause.wav");
+        System.out.println();
+        System.out.println(ANSI_RED + "But lets pray a moment for our losses: "+ ANSI_RESET);
         showGraveyard();
     }
     //Method that send loser to the graveyard
@@ -393,7 +446,9 @@ public class Battle {
 
     //Method that show the graveyard
     public static void showGraveyard(){
-        System.out.println("In the graveyard we have: ");
+        cruz();
+        System.out.println();
+        System.out.println(ANSI_RED + "In the graveyard we have:" );
         //variable to save the players from each team
         List<Character> team1Deads = new ArrayList<>();
         List<Character> team2Deads = new ArrayList<>();
@@ -410,6 +465,7 @@ public class Battle {
         System.out.println();
         System.out.println("From Team 2:");
         printPlayers(team2Deads);
+        System.out.println(ANSI_RESET);
     }
     //method to export/save the party into a csv file
     public static void exportPartyToCSV(List<Character> partyList) throws IOException {
@@ -454,5 +510,82 @@ public class Battle {
             System.out.println(i + ". " + c.getName() + " \"" + kindOfCharacter + "\"");
             i++;
         }
+    }
+
+    //cross creation
+    public static void cruz(){
+        Scanner input = new Scanner(System.in);
+        int i1, i2;
+        char arr[][];
+        i1 = 7;
+        i2 = 5;
+        arr = new char[i1][i2];
+        System.out.println();
+        System.out.println(ANSI_RED);
+            for (int i = 0; i < arr.length; i++) {
+                for (int j = 0; j < arr[i].length; j++) {
+                    if (i == 2 || j == arr[0].length/2){
+                        arr[i][j] = '*';
+                    }else {
+                        arr[i][j] = ' ';
+                    }
+                    System.out.print(arr[i][j]+" ");
+                }
+                System.out.println();
+            }
+        System.out.println(ANSI_RESET);
+
+    }
+
+    //things for the sound and the end
+
+    public static void play(String filePath) {
+        final File file = new File(filePath);
+
+        try (final AudioInputStream in = getAudioInputStream(file)) {
+
+            final AudioFormat outFormat = getOutFormat(in.getFormat());
+            final Info info = new Info(SourceDataLine.class, outFormat);
+
+            try (final SourceDataLine line =
+                         (SourceDataLine) AudioSystem.getLine(info)) {
+
+                if (line != null) {
+                    line.open(outFormat);
+                    line.start();
+                    stream(getAudioInputStream(outFormat, in), line);
+                    line.drain();
+                    line.stop();
+                }
+            }
+
+        } catch (UnsupportedAudioFileException
+                 | LineUnavailableException
+                 | IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public static AudioFormat getOutFormat(AudioFormat inFormat) {
+        final int ch = inFormat.getChannels();
+
+        final float rate = inFormat.getSampleRate();
+        return new AudioFormat(PCM_SIGNED, rate, 16, ch, ch * 2, rate, false);
+    }
+
+    public static void stream(AudioInputStream in, SourceDataLine line)
+            throws IOException {
+        final byte[] buffer = new byte[4096];
+        for (int n = 0; n != -1; n = in.read(buffer, 0, buffer.length)) {
+            line.write(buffer, 0, n);
+        }
+    }
+
+    public static void theend(){
+        System.out.println(ANSI_GREEN +"*******    ****    **    ******");
+        System.out.println("**         ** **   **    **    **");
+        System.out.println("*******    **  **  **    **     **");
+        System.out.println("**         **   ** **    **    **");
+        System.out.println("*******    **    ****    ******"+ ANSI_RESET);
     }
 }

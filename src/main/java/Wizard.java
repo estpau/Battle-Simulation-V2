@@ -34,7 +34,7 @@ public class Wizard extends Character{
             setMana(mana - 5);
         // staff hit
         } else {
-            System.out.print(" " + getName() + " has done a staff hit attack");
+            System.out.println(" " + getName() + " has done a staff hit attack");
             p.setHp(p.getHp() - 2);
             mana++;
         }
