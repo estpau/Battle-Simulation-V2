@@ -5,11 +5,14 @@ public abstract class Character{
     private int hp;
     private boolean isAlive;
 
-    public Character(int id, String name, int hp) {
-        this.id = id;
+    private int currentID = 0;
+
+    public Character(String name, int hp) {
+        this.id = currentID;
         this.name = name;
         this.hp = hp;
         this.isAlive = true;
+        currentID++;
     }
 
     public int getId() {

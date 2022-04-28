@@ -2,8 +2,8 @@ public class Wizard extends Character{
     private int mana;
     private int intelligence;
 
-    public Wizard(int id, String name, int hp, int mana, int intelligence) {
-        super(id, name, hp);
+    public Wizard(String name, int hp, int mana, int intelligence) {
+        super(name, hp);
         this.mana = mana;
         this.intelligence = intelligence;
     }
@@ -46,7 +46,4 @@ public class Wizard extends Character{
 
     }
 
-    public String toString(){
-        return "The Wizard named " + this.getName();
-    }
 }

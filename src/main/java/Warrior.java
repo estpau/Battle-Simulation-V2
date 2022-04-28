@@ -3,8 +3,8 @@ public class Warrior extends  Character{
     private int stamina;
     private int strength;
 
-    public Warrior(int id, String name, int hp, int stamina, int strength) {
-        super(id, name, hp);
+    public Warrior(String name, int hp, int stamina, int strength) {
+        super(name, hp);
         this.stamina = stamina;
         this.strength = strength;
     }
@@ -51,8 +51,5 @@ public class Warrior extends  Character{
 
     }
 
-    public String toString(){
-        return "The Warrior named " + this.getName();
-    }
 }
 
