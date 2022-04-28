@@ -466,6 +466,8 @@ public class Battle {
         System.out.println("From Team 2:");
         printPlayers(team2Deads);
         System.out.println(ANSI_RESET);
+        graveyard.clear();
+        teamOfDead.clear();
     }
     //method to export/save the party into a csv file
     public static void exportPartyToCSV(List<Character> partyList) throws IOException {
