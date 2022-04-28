@@ -320,6 +320,7 @@ public class Battle {
             String start = scanner.nextLine();
             if (start.equals("start")) {
                 play("piratas.wav");
+                start();
                 if (random){
                     randomBattle(team1, team2);
                 } else {
@@ -589,5 +590,16 @@ public class Battle {
         System.out.println("*******    **  **  **    **     **");
         System.out.println("**         **   ** **    **    **");
         System.out.println("*******    **    ****    ******"+ ANSI_RESET);
+    }
+
+    public static void start(){
+        System.out.println(ANSI_GREEN + "XXXXXXX  XXXXXXXX  XXXXXXX  XXXXX    XXXXXXXX     XXXXXX   XXXXXXX  XXXXXXX  XXXXXXX  XX      XXXXXX");
+        System.out.println("XXXXXXX  XXXXXXXX  XX   XX  XXXXXX   XXXXXXXX     XXXXXXX  XX   XX  XXXXXXX  XXXXXXX  XX      XXXXXX");
+        System.out.println("XX          XX     XX   XX  X    XX     XX        XX   XX  XX   XX     XX      XX     XX      XX");
+        System.out.println("XXXXXXX     XX     XXXXXXX  XXXXXX      XX        XXXXXX   XXXXXXX     XX      XX     XX      XXXXX");
+        System.out.println("XXXXXXX     XX     XXXXXXX  XXXXX       XX        XXXXXX   XXXXXXX     XX      XX     XX      XXXXX");
+        System.out.println("     XX     XX     XX   XX  XX  XX      XX        XX   XX  XX   XX     XX      XX     XX      XX");
+        System.out.println("XXXXXXX     XX     XX   XX  XX   XX     XX        XXXXXXX  XX   XX     XX      XX     XXXXXX  XXXXXX");
+        System.out.println("XXXXXXX     XX     XX   XX  XX    XX    XX        XXXXXX   XX   XX     XX      XX     XXXXXX  XXXXXX" + ANSI_RESET);
     }
 }
